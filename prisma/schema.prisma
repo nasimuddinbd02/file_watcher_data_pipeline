@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider = "zod-prisma-types"
+  output   = "./zod"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../data/appointments.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id           String        @id
+  name         String
+  language     String?
+  Appointments Appointment[]
+}
+
+model Client {
+  id                   String        @id
+  account_number_id    String?
+  name                 String?
+  primary_phone_number String?
+  is_new_client        Boolean       @default(false)
+  is_opt_in            Boolean       @default(false)
+  is_org               Boolean       @default(false)
+  is_phone_selected    Boolean       @default(false)
+  is_locked            Boolean       @default(false)
+  is_guest_account     Boolean       @default(false)
+  Patients             Patient[]
+  Appointments         Appointment[]
+}
+
+model Patient {
+  patient_id             String        @id
+  pet_id                 String        @unique
+  client_id              String?
+  record_number          BigInt?
+  pet_name               String?
+  is_new_patient         Boolean       @default(false)
+  has_belongings         Boolean       @default(false)
+  breed                  String?
+  species                String?
+  date_of_birth          String?
+  profile_image_url      String?
+  sex_name               String?
+  sterilization          String?
+  last_weight_kgm        Float?
+  last_weight_lb         Float?
+  alert                  String?
+  has_bites_or_scratches Boolean       @default(false)
+
+  Client       Client?       @relation(fields: [client_id], references: [id])
+  Appointments Appointment[]
+}
+
+model AppointmentType {
+  id                     String        @id
+  name                   String?
+  color_code             String?
+  bu_appointment_type_id String?
+  sub_type_id            String?
+  sub_type_name          String?
+  sub_type_duration      Int?
+  Appointments           Appointment[]
+}
+
+model Appointment {
+  id                     String  @id
+  ouid                   String?
+  resource_guid          String?
+  department_id          String?
+  client_id              String?
+  patient_id             String?
+  appointment_type_id    String?
+  is_emergency           Boolean @default(false)
+  appointment_date       String?
+  date_created           String?
+  date_ste               BigInt?
+  created_by             String?
+  created_application_id String?
+  start_time             String?
+  start_time_ms          BigInt?
+  duration               Int?
+  admission_status_id    String?
+  admission_display_name String?
+  status_id              Int?
+  notes                  String?
+  is_deleted             Boolean @default(false)
+  modified_by            String?
+  date_modified          String?
+  is_walkin              Boolean @default(false)
+  arrival_ts             String?
+  is_confirmed           Boolean @default(false)
+  is_doctor              Boolean @default(true)
+  is_real_staff          Boolean @default(true)
+  payment_due_warning    Boolean @default(false)
+
+  Department      Department?              @relation(fields: [department_id], references: [id])
+  Client          Client?                  @relation(fields: [client_id], references: [id])
+  Patient         Patient?                 @relation(fields: [patient_id], references: [patient_id])
+  AppointmentType AppointmentType?         @relation(fields: [appointment_type_id], references: [id])
+  Reasons         AppointmentReason[]
+  StatusAudit     AppointmentStatusAudit[]
+}
+
+model AppointmentReason {
+  appointment_id String
+  reason_id      String
+  name           String?
+
+  Appointment Appointment @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+
+  @@id([appointment_id, reason_id])
+}
+
+model AppointmentStatusAudit {
+  id                    Int     @id @default(autoincrement())
+  appointment_id        String
+  time_stamp            String
+  status_changed_to     String?
+  changed_by_user_id    String?
+  application_id        String?
+  resource_id           String?
+  resource_name         String?
+  appointment_date_time String?
+
+  Appointment Appointment @relation(fields: [appointment_id], references: [id], onDelete: Cascade)
+}
+
+model FileProcessingRecord {
+  id               Int      @id @default(autoincrement())
+  file_name        String
+  process_time     DateTime @default(now())
+  file_size_bytes  BigInt
+  total_time_ms    Float
+  status           String
+  error_message    String?
+}

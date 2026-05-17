@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+npm-debug.log
+
+# TypeScript compilation output
+dist/
+out/
+
+# Environment variables
+
+
+# Application specific data and logs
+data/
+watch/
+logs/
+
+# Prisma
+prisma/*.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

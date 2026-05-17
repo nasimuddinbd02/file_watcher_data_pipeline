@@ -1,0 +1,62 @@
+{
+  "name": "file_watcher_data_pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:api": "ts-node -r tsconfig-paths/register src/main.ts",
+    "start:watcher": "ts-node -r tsconfig-paths/register src/watcher.main.ts",
+    "start": "concurrently -n \"api,watcher\" -c \"cyan,magenta\" \"npm run start:api\" \"npm run start:watcher\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nestjs/common": "^11.1.21",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.1.21",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/mapped-types": "^2.1.1",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.1.21",
+    "@nestjs/swagger": "^11.4.3",
+    "@prisma/client": "^5.22.0",
+    "@types/node": "^25.8.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
+    "chokidar": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "dotenv": "^17.4.2",
+    "helmet": "^8.1.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "prisma": "^5.22.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "winston": "^3.19.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.1.21",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "concurrently": "^9.2.1",
+    "jest": "^30.4.2",
+    "jest-mock-extended": "^4.0.1",
+    "ts-jest": "^29.4.9",
+    "tsconfig-paths": "^4.2.0",
+    "zod-prisma-types": "^3.3.11"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
+}
