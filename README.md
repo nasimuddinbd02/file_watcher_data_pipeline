@@ -31,6 +31,34 @@ This project is designed to handle the ingestion of large, complex JSON batch fi
 * **Authentication**: Passport-JWT
 * **Testing**: Jest
 
+## 🏗️ Architecture
+
+The system is separated into two logical applications that share a core database, both running on NestJS:
+
+```mermaid
+graph TD
+    subgraph "External Systems"
+        A[Legacy System Export] -->|Writes JSON| B(./watch Directory)
+    end
+
+    subgraph "Background Watcher (watcher.main.ts)"
+        B -->|Chokidar Event| C[File Watcher Service]
+        C -->|Raw JSON Data| D[Parser Service]
+        D -->|Validates via Zod| E[Domain Validation Engine]
+        E -->|Normalized Data| F[Ingestion Service]
+        E -.->|Invalid Data| G(./watch/invalid)
+        F -->|Upsert Retry Logic| H[(SQLite Database)]
+        F -->|Success| I(./watch/processed)
+    end
+
+    subgraph "REST API (main.ts)"
+        J[Web/Mobile Clients] -->|HTTP Requests| K[NestJS Controllers]
+        K -->|JWT Auth| L[Auth Service]
+        K --> M[API Services]
+        M --> H
+    end
+```
+
 ## 📁 Project Structure
 
 ```text
@@ -38,19 +66,27 @@ file_watcher_data_pipeline/
 ├── src/
 │   ├── main.ts                 # REST API Bootstrap
 │   ├── watcher.main.ts         # Background Watcher Bootstrap
-│   ├── api/                    # REST API Controllers & Services
-│   ├── config/                 # Application Configuration
-│   ├── domain/schemas/         # Zod schemas (Data normalization)
-│   ├── providers/              # FileWatcher, Logger mechanisms
-│   ├── services/               # ParserService, IngestionService
-│   └── prisma/                 # Prisma connection & retry logic
+│   ├── api/                    # REST API Controllers & Services for each entity (Patients, Appointments, etc.)
+│   ├── auth/                   # JWT Authentication Strategy, Guards, and Controllers
+│   ├── common/                 # Shared Utilities, Filters, Interceptors
+│   ├── config/                 # Application Configuration Setup (Env vars)
+│   ├── core/                   # Core App Module configurations
+│   ├── domain/                 # Domain logic, Data Transfer Objects (DTOs), Zod Schemas
+│   ├── ingestion/              # Specific modules for Parser, Pipeline, and Repositories
+│   ├── prisma/                 # Prisma client, Database connection & retry logic
+│   ├── providers/              # Shared providers like Logger, File Watcher mechanism
+│   ├── repositories/           # Data access layer, abstracting Prisma calls
+│   └── services/               # Specific business logic services
 ├── prisma/
-│   └── schema.prisma           # Database definitions
-├── test/                       # Jest unit and integration tests
-├── watch/                      # Target folder for ingestion
-│   ├── processed/              # Successfully ingested files
-│   └── invalid/                # Failed files
-└── data/                       # SQLite database file storage
+│   ├── schema.prisma           # Prisma Database definitions and models
+│   ├── seed.ts                 # Database seeding script (Admin user)
+│   └── zod/                    # Auto-generated Zod schemas from Prisma
+├── test/                       # Jest unit and e2e integration tests
+├── watch/                      # Target directory for file ingestion
+│   ├── processed/              # Successfully ingested JSON files are moved here
+│   └── invalid/                # Failed/Invalid JSON files are moved here
+├── data/                       # Local SQLite database file storage
+└── logs/                       # Winston application logs (error, combined)
 ```
 
 ## ⚙️ Getting Started
